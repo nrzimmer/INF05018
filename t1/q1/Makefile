@@ -27,3 +27,6 @@ zip:
 
 run: $(BIN)
 	./$(BIN)
+
+format:
+	VERSION_CONTROL=numbered VERSION_WIDTH=2 indent $(SRCS) $(HEADERS)
