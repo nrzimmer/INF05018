@@ -23,7 +23,7 @@ clean:
 
 zip:
 	$(RM) $(ZIPNAME)
-	zip $(ZIPNAME) $(OBJ) $(BINDIR) $(SRCS) $(HEADERS) Makefile
+	zip $(ZIPNAME) $(OBJ) $(BINDIR) $(SRCS) $(HEADERS) Makefile *.md
 
 run: $(BIN)
 	./$(BIN)
