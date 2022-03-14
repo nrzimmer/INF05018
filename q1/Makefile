@@ -7,10 +7,10 @@ SRCS=$(wildcard $(SRC)/*.c)
 HEADERS=$(wildcard $(SRC)/*.h)
 OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 BINDIR=bin
-BIN=$(BINDIR)/q1
+BIN=$(BINDIR)/main
 ZIPNAME=q1.zip
 
-all: $(BIN)
+all: $(BIN) 
 
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(BIN)
