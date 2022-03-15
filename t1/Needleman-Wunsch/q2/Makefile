@@ -11,7 +11,6 @@ HEADERS+=$(wildcard $(LIBSRC)/*.h)
 OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 BINDIR=bin
 BIN=$(BINDIR)/main
-ZIPNAME=q2.zip
 
 all: $(BINDIR) $(BIN)
 
@@ -41,10 +40,6 @@ clean:
 
 cleanup:
 	$(RM) -r -v $(SRC)/*.*~*~
-
-zip:
-	$(RM) $(ZIPNAME)
-	zip $(ZIPNAME) $(OBJ) $(BINDIR) $(SRCS) $(HEADERS) Makefile *.md
 
 run: all
 	./$(BIN)

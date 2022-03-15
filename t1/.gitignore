@@ -2,4 +2,4 @@
 *.o
 .vscode
 *.zip
-*/bin/*
+**/bin/*
