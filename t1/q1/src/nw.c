@@ -4,11 +4,24 @@
 #include "nw.h"
 
 #define NW_ORIGIN_NONE 0
-#define NW_ORIGIN_TOP  1
+#define NW_ORIGIN_TOP 1
 #define NW_ORIGIN_LEFT 2
 #define NW_ORIGIN_DIAG 4
+#define CHR_MATCH '*'
+#define CHR_MISMATCH '|'
+#define CHR_INSERT ' '
+#define CHR_INSERTED '-'
 
-void nw_freematrix(struct nw_matrix *matrix)
+struct __nw_matrix {
+    int rows;
+    int columns;
+    int **data;
+    char **origin;
+};
+
+int nw_get_matrix_value(nw_matrix * matrix, int row, int col);
+
+void nw_freematrix(nw_matrix * matrix)
 {
     for (int i = 0; i < matrix->rows; i++) {
         free(matrix->data[i]);
@@ -19,9 +32,9 @@ void nw_freematrix(struct nw_matrix *matrix)
     free(matrix);
 }
 
-struct nw_matrix *nw_allocmatrix(const int rows, const int columns)
+nw_matrix *nw_allocmatrix(const int rows, const int columns)
 {
-    struct nw_matrix *matrix = (struct nw_matrix *) malloc(sizeof(struct nw_matrix));
+    nw_matrix *matrix = (nw_matrix *) malloc(sizeof(nw_matrix));
 
     matrix->rows = rows;
     matrix->columns = columns;
@@ -38,11 +51,13 @@ struct nw_matrix *nw_allocmatrix(const int rows, const int columns)
     return matrix;
 }
 
-struct nw_matrix *nw_create_matrix(const char *sa, const char *sb, int match, int mismatch, int gap)
+nw_matrix *nw_create_matrix(const char *sa, const char *sb, int match, int mismatch, int gap)
 {
     int rows = strlen(sa) + 1;
     int cols = strlen(sb) + 1;
-    struct nw_matrix *matrix = nw_allocmatrix(rows, cols);
+
+    return nw_allocmatrix(rows, cols);
+    nw_matrix *matrix = nw_allocmatrix(rows, cols);
 
     matrix->data[0][0] = 0;
     for (int x = 1; x < cols; x++) {
@@ -56,38 +71,70 @@ struct nw_matrix *nw_create_matrix(const char *sa, const char *sb, int match, in
     return matrix;
 }
 
-void nw_fill_matrix(struct nw_matrix *matrix, const char *sa, const char *sb, int match, int mismatch, int gap)
+int nw_get_matrix_value(nw_matrix * matrix, int row, int col)
 {
-    int MatchMismatch;
+    if ((row < 0) || (col < 0))
+        return 0;
 
-    for (int row = 1; row < matrix->rows; row++) {
-        for (int col = 1; col < matrix->columns; col++) {
-            if (sa[row - 1] == sb[col - 1]) {
-                MatchMismatch = match;
+    return matrix->data[row][col];
+}
+
+int nw_is_match(const char *sa, const char *sb, int row, int col)
+{
+    if ((row <= 0) || (col <= 0))
+        return 0;
+    if (sa[row - 1] == sb[col - 1])
+        return 1;
+    return 0;
+}
+
+int nw_get_best_origin(int mm, int ga, int gb, int *out)
+{
+    int max = (mm > ga ? mm : ga);
+
+    *out = (max > gb ? max : gb);
+    int result = 0;
+
+    if (*out == mm)
+        result |= NW_ORIGIN_DIAG;
+    if (*out == ga)
+        result |= NW_ORIGIN_LEFT;
+    if (*out == gb)
+        result |= NW_ORIGIN_TOP;
+    return result;
+}
+
+void nw_fill_matrix(nw_matrix * matrix, const char *sa, const char *sb, int match, int mismatch, int gap)
+{
+    int mm;
+    int ga;
+    int gb;
+
+    for (int row = 0; row < matrix->rows; row++) {
+        for (int col = 0; col < matrix->columns; col++) {
+            if (row == 0 && col == 0) {
+                matrix->data[row][col] = 0;
+                matrix->origin[row][col] = 0;
+            } else if (row == 0) {
+                matrix->data[row][col] = nw_get_matrix_value(matrix, row, col - 1) + gap;
+                matrix->origin[row][col] = NW_ORIGIN_LEFT;
+            } else if (col == 0) {
+                matrix->data[row][col] = nw_get_matrix_value(matrix, row - 1, col) + gap;
+                matrix->origin[row][col] = NW_ORIGIN_TOP;
             } else {
-                MatchMismatch = mismatch;
+                mm = nw_get_matrix_value(matrix, row - 1, col - 1) + (nw_is_match(sa, sb, row, col) ? match : mismatch);
+                ga = nw_get_matrix_value(matrix, row, col - 1) + gap;
+                gb = nw_get_matrix_value(matrix, row - 1, col) + gap;
+                matrix->origin[row][col] = nw_get_best_origin(mm, ga, gb, &(matrix->data[row][col]));
             }
-            MatchMismatch = matrix->data[row - 1][col - 1] + MatchMismatch;
-            int gapA = matrix->data[row][col - 1] + gap;
-            int gapB = matrix->data[row - 1][col] + gap;
-            int maxGap = gapA > gapB ? gapA : gapB;
-
-            matrix->data[row][col] = MatchMismatch > maxGap ? MatchMismatch : maxGap;
-            if (matrix->data[row][col] == gapB) {
-                matrix->origin[row][col] |= NW_ORIGIN_TOP;
-            }
-            if (matrix->data[row][col] == gapA) {
-                matrix->origin[row][col] |= NW_ORIGIN_LEFT;
-            }
-            if (matrix->data[row][col] == MatchMismatch) {
-                matrix->origin[row][col] |= NW_ORIGIN_DIAG;
-            }
-            // nw_print_matrix(matrix, sa, sb);
+#ifdef DEBUG
+            nw_print_matrix(matrix, sa, sb);
+#endif
         }
     }
 }
 
-void nw_print_matrix_row(struct nw_matrix *matrix, int row, const char *sa)
+void nw_print_matrix_row(nw_matrix * matrix, int row, const char *sa)
 {
     // Print Column Header
     if (row) {
@@ -97,18 +144,18 @@ void nw_print_matrix_row(struct nw_matrix *matrix, int row, const char *sa)
     }
 
     for (int col = 0; col < matrix->columns; col++) {
-        printf("%4d", matrix->data[row][col]);
+        printf("%6d", matrix->data[row][col]);
     }
 
     printf("\n");
 }
 
-void nw_print_matrix(struct nw_matrix *matrix, const char *sa, const char *sb)
+void nw_print_matrix(nw_matrix * matrix, const char *sa, const char *sb)
 {
     // Print Header
-    printf("%6c", ' ');
+    printf("%8c", ' ');
     for (int col = 0; col < matrix->columns; col++) {
-        printf("%4c", sb[col]);
+        printf("%6c", sb[col]);
     }
     printf("\n");
 
@@ -119,46 +166,79 @@ void nw_print_matrix(struct nw_matrix *matrix, const char *sa, const char *sb)
     printf("\n");
 }
 
-void nw_trackback_matrix(struct nw_matrix *matrix, const char *sa, const char *sb, char *new_a, char *new_b, char *sdiff)
+int *nw_trackback_matrix(nw_matrix * matrix, const char *sa, const char *sb, char *new_a, char *new_b, char *sdiff)
 {
-    const char CHR_MATCH = '*';
-    const char CHR_MISMATCH = '|';
-    const char CHR_INSERT = ' ';
-    const char CHR_INSERTED = '-';
-    int curY = matrix->rows - 1;
-    int curX = matrix->columns - 1;
-    int max = curX > curY ? curX : curY;
-    int curPos = max;
+    int row = matrix->rows - 1;
+    int col = matrix->columns - 1;
+    int max = col > row ? col : row;
+    int *path = (int *) malloc((max + 1) * 2 * sizeof(int));
+    int index = max;
 
     for (int i = 0; i < max; i++) {
-        printf("%3d", matrix->data[curY][curX]);
-        if (matrix->origin[curY][curX] & NW_ORIGIN_DIAG) {
+        path[i * 2] = matrix->data[row][col];
+        if (matrix->origin[row][col] & NW_ORIGIN_DIAG) {
             // Diagonal (Match / Mismatch)
-            curX--;
-            curY--;
-            curPos--;
-            new_a[curPos] = sa[curY];
-            new_b[curPos] = sb[curX];
-            if (sa[curY] == sb[curX]) {
-                sdiff[curPos] = CHR_MATCH;
+            path[i * 2 + 1] = NW_ORIGIN_DIAG;
+            col--;
+            row--;
+            index--;
+            new_a[index] = sa[row];
+            new_b[index] = sb[col];
+            if (sa[row] == sb[col]) {
+                sdiff[index] = CHR_MATCH;
             } else {
-                sdiff[curPos] = CHR_MISMATCH;
+                sdiff[index] = CHR_MISMATCH;
             }
-        } else if (matrix->origin[curY][curX] & NW_ORIGIN_LEFT) {
+        } else if (matrix->origin[row][col] & NW_ORIGIN_LEFT) {
             // Left (Insert in new_a)
-            curX--;
-            curPos--;
-            new_a[curPos] = CHR_INSERTED;
-            new_b[curPos] = sb[curX];
-            sdiff[curPos] = CHR_INSERT;
-        } else if (matrix->origin[curY][curX] & NW_ORIGIN_TOP) {
+            path[i * 2 + 1] = NW_ORIGIN_LEFT;
+            col--;
+            index--;
+            new_a[index] = CHR_INSERTED;
+            new_b[index] = sb[col];
+            sdiff[index] = CHR_INSERT;
+        } else if (matrix->origin[row][col] & NW_ORIGIN_TOP) {
             // Up (Insert in new_b)
-            curY--;
-            curPos--;
-            new_a[curPos] = sa[curY];
-            new_b[curPos] = CHR_INSERTED;
-            sdiff[curPos] = CHR_INSERT;
+            path[i * 2 + 1] = NW_ORIGIN_TOP;
+            row--;
+            index--;
+            new_a[index] = sa[row];
+            new_b[index] = CHR_INSERTED;
+            sdiff[index] = CHR_INSERT;
         }
     }
-    printf("%3d\n", matrix->data[0][0]);
+    path[max * 2] = 0;
+    path[max * 2 + 1] = -1;
+    return path;
+}
+
+int nw_get_identity(char *sdiff, int new_len)
+{
+    int result = 0;
+
+    for (int i = 0; i < new_len; i++) {
+        if (sdiff[i] == CHR_MATCH)
+            result++;
+    }
+    return result;
+}
+
+void nw_print_path(int *path, int new_len)
+{
+    for (int i = 0; i <= new_len; i++) {
+        printf("%d", path[i * 2]);
+        switch (path[i * 2 + 1]) {
+        case NW_ORIGIN_DIAG:
+            printf(" \u2196 "); // ↖
+            break;
+        case NW_ORIGIN_TOP:
+            printf(" \u2191 "); // ↑
+            break;
+        case NW_ORIGIN_LEFT:
+            printf(" \u2190 "); // ← 
+            break;
+        default:
+            printf("\n");
+        }
+    }
 }

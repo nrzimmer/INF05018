@@ -15,11 +15,17 @@ all: $(BIN)
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(BIN)
 
+$(OBJ)/%.o: $(SRC)/%.c $(SRC)/%.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(OBJ)/%.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) -r $(OBJ)/* $(BINDIR)/* $(ZIPNAME)
+	$(RM) -r -v $(OBJ)/* $(BINDIR)/* $(ZIPNAME)
+
+cleanup:
+	$(RM) -r -v $(SRC)/*.*~*~
 
 zip:
 	$(RM) $(ZIPNAME)
@@ -27,6 +33,10 @@ zip:
 
 run: $(BIN)
 	./$(BIN)
+
+debug: CFLAGS += -DDEBUG
+debug: clean
+debug: all
 
 format:
 	VERSION_CONTROL=numbered VERSION_WIDTH=2 indent $(SRCS) $(HEADERS)
