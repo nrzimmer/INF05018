@@ -137,15 +137,13 @@ void nw_fill_matrix(nw_matrix * matrix, const char *sa, const char *sb, int matc
 void nw_print_matrix_row(nw_matrix * matrix, int row, const char *sa)
 {
     // Print Column Header
-    if (row) {
+    if (row)
         printf("%c ", sa[row - 1]);
-    } else {
+    else
         printf("  ");
-    }
 
-    for (int col = 0; col < matrix->columns; col++) {
+    for (int col = 0; col < matrix->columns; col++)
         printf("%6d", matrix->data[row][col]);
-    }
 
     printf("\n");
 }
@@ -154,14 +152,13 @@ void nw_print_matrix(nw_matrix * matrix, const char *sa, const char *sb)
 {
     // Print Header
     printf("%8c", ' ');
-    for (int col = 0; col < matrix->columns; col++) {
+    for (int col = 0; col < matrix->columns; col++)
         printf("%6c", sb[col]);
-    }
+
     printf("\n");
 
-    for (int row = 0; row < matrix->rows; row++) {
+    for (int row = 0; row < matrix->rows; row++)
         nw_print_matrix_row(matrix, row, sa);
-    }
 
     printf("\n");
 }
@@ -184,11 +181,11 @@ int *nw_trackback_matrix(nw_matrix * matrix, const char *sa, const char *sb, cha
             index--;
             new_a[index] = sa[row];
             new_b[index] = sb[col];
-            if (sa[row] == sb[col]) {
+            if (sa[row] == sb[col])
                 sdiff[index] = CHR_MATCH;
-            } else {
+            else
                 sdiff[index] = CHR_MISMATCH;
-            }
+
         } else if (matrix->origin[row][col] & NW_ORIGIN_LEFT) {
             // Left (Insert in new_a)
             path[i * 2 + 1] = NW_ORIGIN_LEFT;
