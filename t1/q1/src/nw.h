@@ -1,24 +1,22 @@
 #ifndef __NW_H__
 #define __NW_H__
 
-typedef struct nwMatrix {
-    int Rows;
-    int Columns;
-    int **Data;
-    char **Origin;
-} nwMatrix;
+struct nw_matrix {
+    int rows;
+    int columns;
+    int **data;
+    char **origin;
+};
 
-nwMatrix *nwAllocMatrix(const int rows, const int columns);
-void nwFreeMatrix(nwMatrix * matrix);
+struct nw_matrix *nw_allocmatrix(const int rows, const int columns);
+void nw_freematrix(struct nw_matrix *matrix);
 
-nwMatrix *nwGenerateMatrix(const char *seqA, const char *seqB, int match, int mismatch, int gap);
-void nwFillMatrix(nwMatrix * matrix, const char *seqA, const char *seqB, int match, int mismatch, int gap);
+struct nw_matrix *nw_create_matrix(const char *sa, const char *sb, int match, int mismatch, int gap);
+void nw_fill_matrix(struct nw_matrix *matrix, const char *sa, const char *sb, int match, int mismatch, int gap);
 
-void nwSeqTrackback(nwMatrix * matrix, const char *seqA, const char *seqB, char *newSeqA, char *newSeqB, char *seqDiff);
+void nw_trackback_matrix(struct nw_matrix *matrix, const char *sa, const char *sb, char *new_a, char *new_b, char *sdiff);
 
-int nwGetMaxSeqLen(const char *seqA, const char *seqB);
-
-void nwPrintMatrix(nwMatrix * matrix, const char *seqA, const char *seqB);
-void nwPrintMatrixRow(nwMatrix * matrix, int row, const char *seqA);
+void nw_print_matrix(struct nw_matrix *matrix, const char *sa, const char *sb);
+void nw_print_matrix_row(struct nw_matrix *matrix, int row, const char *sa);
 
 #endif

@@ -14,11 +14,12 @@
 --continue-at-parentheses
 --no-blank-lines-after-commas
 --dont-break-function-decl-args
---no-space-after-casts
 --no-space-after-function-call-names
 --dont-break-procedure-type
 --no-tabs
 --preserve-mtime
+--space-after-casts
+/*--no-space-after-casts*/
 --space-after-for
 --space-after-if
 --start-left-side-of-comments
