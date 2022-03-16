@@ -119,7 +119,7 @@ void sw_fill_matrix(sw_matrix * matrix, const char *sa, const char *sb, int matc
                 matrix->origin[row][col] = nw_get_best_origin(mm, ga, gb, &(matrix->data[row][col]));
             }
 #ifdef DEBUG
-            // sw_print_matrix(matrix, sa, sb);
+            sw_print_matrix(matrix, sa, sb);
 #endif
         }
     }
