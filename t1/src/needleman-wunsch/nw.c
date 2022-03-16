@@ -57,18 +57,6 @@ nw_matrix *nw_create_matrix(const char *sa, const char *sb, int match, int misma
     int cols = strlen(sb) + 1;
 
     return nw_allocmatrix(rows, cols);
-    nw_matrix *matrix = nw_allocmatrix(rows, cols);
-
-    matrix->data[0][0] = 0;
-    for (int x = 1; x < cols; x++) {
-        matrix->data[0][x] = x * gap;
-        matrix->origin[0][x] = NW_ORIGIN_LEFT;
-    }
-    for (int y = 1; y < rows; y++) {
-        matrix->data[y][0] = y * gap;
-        matrix->origin[y][0] = NW_ORIGIN_TOP;
-    }
-    return matrix;
 }
 
 int nw_get_matrix_value(nw_matrix * matrix, int row, int col)

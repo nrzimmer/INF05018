@@ -1,0 +1,32 @@
+CC=gcc
+CFLAGS=-g -Wall
+SRC=src
+NW=$(SRC)/needleman-wunsch
+OBJ=obj
+BINDIR=bin
+BINOBJ=$(OBJ)/q2.o
+BINLIB=$(OBJ)/nw.o
+BIN=$(BINDIR)/q2
+
+all: $(BINDIR) $(BIN)
+
+$(BIN): $(OBJ) $(BINLIB) $(BINOBJ)
+	$(CC) $(CFLAGS) $(BINLIB) $(BINOBJ) -o $(BIN)
+
+$(OBJ)/%.o: $(NW)/%.c $(NW)/%.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ)/%.o: $(SRC)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BINDIR):
+	mkdir $(BINDIR)
+
+$(OBJ):
+	mkdir $(OBJ)
+
+clean:
+	$(RM) -r -v $(OBJ)/* $(BINDIR)/*
+
+run:
+	./$(BIN)

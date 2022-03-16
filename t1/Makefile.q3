@@ -1,0 +1,32 @@
+CC=gcc
+CFLAGS=-g -Wall
+SRC=src
+SW=$(SRC)/smith-waterman
+OBJ=obj
+BINDIR=bin
+BINOBJ=$(OBJ)/q3.o
+BINLIB=$(OBJ)/sw.o
+BIN=$(BINDIR)/q3
+
+all: $(BINDIR) $(BIN)
+
+$(BIN): $(OBJ) $(BINLIB) $(BINOBJ)
+	$(CC) $(CFLAGS) $(BINLIB) $(BINOBJ) -o $(BIN)
+
+$(OBJ)/%.o: $(SW)/%.c $(SW)/%.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ)/%.o: $(SRC)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BINDIR):
+	mkdir $(BINDIR)
+
+$(OBJ):
+	mkdir $(OBJ)
+
+clean:
+	$(RM) -r -v $(OBJ)/* $(BINDIR)/*
+
+run:
+	./$(BIN)
